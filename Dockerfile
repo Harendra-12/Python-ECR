@@ -1,4 +1,4 @@
-# Use official Python base image
+# Use official Python base imagee
 FROM python:3.10-slim
 
 # Set working directory
