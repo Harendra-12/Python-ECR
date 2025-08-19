@@ -17,9 +17,9 @@ pipeline {
         }
 
         stage('Build Podman Image') {
-            steps {
-                script {
-                    sh "podman build -t ${REPO_NAME}:${IMAGE_TAG} ."
+    steps {
+        script {
+            sh "sudo podman build --cgroup-manager=cgroupfs -t ${REPO_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
