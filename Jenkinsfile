@@ -26,10 +26,11 @@ pipeline {
 
         stage('Login to ECR') {
             steps {
-                sh """
-                  aws ecr get-login-password --region ${AWS_REGION} \
-                  | podman login --username AWS --password-stdin ${ECR_URL}
-                """
+                sh '''
+PASSWORD=$(aws ecr get-login-password --region us-east-2)
+podman login --username AWS --password $PASSWORD 677276107791.dkr.ecr.us-east-2.amazonaws.com/ecr_repository
+'''
+
             }
         }
 
