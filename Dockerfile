@@ -1,18 +1,14 @@
-# Use an official Python base image
+# Use official Python base image
 FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Create a simple Python app directly inside the image
+RUN echo 'print("Hello from test container!")' > app.py
 
-# Copy application code
-COPY app.py .
-
-# Expose port
+# Expose port (optional for testing)
 EXPOSE 5000
 
-# Run the app
+# Run the test app
 CMD ["python", "app.py"]
