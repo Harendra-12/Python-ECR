@@ -42,3 +42,13 @@ pipeline {
             }
         }
     }
+
+    post {
+        success {
+            echo "✅ Successfully pushed: ${ECR_URL}:${IMAGE_TAG}"
+        }
+        failure {
+            echo "❌ Pipeline failed. Check logs."
+        }
+    }
+}
