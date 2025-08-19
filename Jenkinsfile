@@ -16,9 +16,9 @@ pipeline {
             }
         }
 
-        stage('Build Image with Podman') {
+        stage('Build Image with Docker') {
             steps {
-                sh "sudo podman build --cgroup-manager=cgroupfs -t ${REPO_NAME}:${IMAGE_TAG} ."
+                sh "sudo docker build -t ${REPO_NAME}:${IMAGE_TAG} ."
             }
         }
 
@@ -27,7 +27,7 @@ pipeline {
                 withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
                     sh '''
                     PASSWORD=$(aws ecr get-login-password --region us-east-2)
-                    podman login --username AWS --password $PASSWORD 677276107791.dkr.ecr.us-east-2.amazonaws.com
+                    docker login --username AWS --password $PASSWORD 677276107791.dkr.ecr.us-east-2.amazonaws.com
                     '''
                 }
             }
@@ -36,8 +36,8 @@ pipeline {
         stage('Tag & Push Image to ECR') {
             steps {
                 sh """
-                podman tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}:${IMAGE_TAG}
-                podman push ${ECR_URL}:${IMAGE_TAG}
+                docker tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}:${IMAGE_TAG}
+                docker push ${ECR_URL}:${IMAGE_TAG}
                 """
             }
         }
