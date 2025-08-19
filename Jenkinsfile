@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCOUNT_ID = "677276107791"         
-        AWS_REGION     = "us-east-2"           
-        REPO_NAME      = "ecr_repository"      
-        IMAGE_TAG      = "latest"              
+        AWS_ACCOUNT_ID = "677276107791"
+        AWS_REGION     = "us-east-2"
+        REPO_NAME      = "ecr_repository"
+        IMAGE_TAG      = "latest"   // You can change this to BUILD_NUMBER or git commit SHA
         ECR_URL        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}"
     }
 
@@ -16,12 +16,9 @@ pipeline {
             }
         }
 
-        stage('Build Podman Image') {
+        stage('Build Image with Podman') {
             steps {
-                sh """
-                  echo '🔨 Building image from Dockerfile'
-                  podman build --cgroup-manager=cgroupfs -t ${REPO_NAME}:${IMAGE_TAG} .
-                """
+                sh "sudo podman build --cgroup-manager=cgroupfs -t ${REPO_NAME}:${IMAGE_TAG} ."
             }
         }
 
@@ -29,32 +26,19 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
                     sh '''
-                    PASSWORD=$(aws ecr get-login-password --region ${AWS_REGION})
-                    podman login --username AWS --password $PASSWORD ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    PASSWORD=$(aws ecr get-login-password --region us-east-2)
+                    podman login --username AWS --password $PASSWORD 677276107791.dkr.ecr.us-east-2.amazonaws.com
                     '''
                 }
             }
         }
 
-        stage('Tag & Push to ECR') {
+        stage('Tag & Push Image to ECR') {
             steps {
                 sh """
-                  echo '🏷️  Tagging image for ECR'
-                  podman tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}:${IMAGE_TAG}
-
-                  echo '🚀 Pushing image to ECR'
-                  podman push ${ECR_URL}:${IMAGE_TAG}
+                podman tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}:${IMAGE_TAG}
+                podman push ${ECR_URL}:${IMAGE_TAG}
                 """
             }
         }
     }
-
-    post {
-        success {
-            echo "✅ Image pushed successfully: ${ECR_URL}:${IMAGE_TAG}"
-        }
-        failure {
-            echo "❌ Pipeline failed. Check logs."
-        }
-    }
-}
