@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCOUNT_ID = "677276107791"        // Your AWS Account ID
-        AWS_REGION     = "us-east-2"           // Your AWS region
-        REPO_NAME      = "ecr_repository"      // Your ECR repo name
-        IMAGE_TAG      = "latest"              // Or use BUILD_NUMBER / commit SHA
-        ECR_URL        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        AWS_ACCOUNT_ID = "677276107791"         // 🔹 Replace with your AWS Account ID
+        AWS_REGION     = "us-east-2"           // 🔹 Replace with your region
+        REPO_NAME      = "ecr_repository"      // 🔹 Your ECR repo name
+        IMAGE_TAG      = "latest"              // or use BUILD_NUMBER / commit SHA
+        ECR_URL        = "677276107791.dkr.ecr.us-east-2.amazonaws.com/ecr_repository"
     }
 
     stages {
@@ -16,10 +16,10 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Podman Image') {
             steps {
                 script {
-                    sh "docker build -t ${REPO_NAME}:${IMAGE_TAG} ."
+                    sh "podman build -t ${REPO_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 sh """
                   aws ecr get-login-password --region ${AWS_REGION} \
-                  | docker login --username AWS --password-stdin ${ECR_URL}
+                  | podman login --username AWS --password-stdin ${ECR_URL}
                 """
             }
         }
@@ -36,8 +36,8 @@ pipeline {
         stage('Tag & Push Image to ECR') {
             steps {
                 sh """
-                  docker tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}
-                  docker push ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}
+                  podman tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}
+                  podman push ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}
                 """
             }
         }
