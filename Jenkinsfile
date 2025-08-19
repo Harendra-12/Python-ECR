@@ -5,7 +5,7 @@ pipeline {
         AWS_ACCOUNT_ID = "677276107791"
         AWS_REGION     = "us-east-2"
         REPO_NAME      = "ecr_repository"
-        IMAGE_TAG      = "latest"
+        IMAGE_TAG      = "latest"   // You can change this to BUILD_NUMBER or git commit SHA
         ECR_URL        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}"
     }
 
@@ -24,11 +24,10 @@ pipeline {
 
         stage('Login to ECR') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-                                  credentialsId: 'awscreds']]) {
+                withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
                     sh '''
-                        PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
-                        podman login --username AWS --password $PASSWORD ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    PASSWORD=$(aws ecr get-login-password --region us-east-2)
+                    podman login --username AWS --password $PASSWORD 677276107791.dkr.ecr.us-east-2.amazonaws.com
                     '''
                 }
             }
